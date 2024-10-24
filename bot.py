@@ -4,8 +4,10 @@ import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, CallbackQueryHandler
 from datetime import datetime
+from dotenv import load_dotenv
 
 # Your bot token from the environment or set manually
+load_dotenv()
 TOKEN = os.getenv("YOUR_BOT_TOKEN")  # Replace with your actual token
 
 # Define the file where mood data will be stored
