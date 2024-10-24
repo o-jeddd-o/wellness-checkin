@@ -1,0 +1,19 @@
+{
+    "1184477454": {
+        "name": "Jeddd",
+        "moods": [
+            {
+                "mood": "happy",
+                "timestamp": "2024-10-24 10:06:01"
+            },
+            {
+                "mood": "sad",
+                "timestamp": "2024-10-24 10:06:18"
+            },
+            {
+                "mood": "anxious",
+                "timestamp": "2024-10-24 10:06:31"
+            }
+        ]
+    }
+}

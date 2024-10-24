@@ -1,23 +1,47 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler
+import os
+import json
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, CallbackQueryHandler
+from datetime import datetime
 
-TOKEN = '7620234949:AAESoN1w-ClJKfNIlxInqmZuI6uj_K-t8Ns'
+# Your bot token from the environment or set manually
+TOKEN = os.getenv("7620234949:AAESoN1w-ClJKfNIlxInqmZuI6uj_K-t8Ns") or "7620234949:AAESoN1w-ClJKfNIlxInqmZuI6uj_K-t8Ns"
 
-async def start(update: Update, context):
-    await update.message.reply_text('Hello! I am your wellness check-in bot.')
+# Define the file where mood data will be stored
+DATA_FILE = 'mood_data.json'
 
+# Create the mood data file if it doesn't exist
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as file:
         json.dump({}, file)
 
-async def start(update: Update, context):
-    await update.message.reply_text('Hello! How are you feeling today?')
+# Start command to greet users and show mood options
+async def start(update: Update, context: CallbackContext):
+    keyboard = [
+        [InlineKeyboardButton("Happy 😊", callback_data='happy')],
+        [InlineKeyboardButton("Sad 😔", callback_data='sad')],
+        [InlineKeyboardButton("Anxious 😟", callback_data='anxious')],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text('Hello! How are you feeling today?', reply_markup=reply_markup)
 
-async def log_mood(update: Update, context):
-    user_id = update.message.from_user.id
-    user_name = update.message.from_user.first_name
-    mood = update.message.text
+# Handling button press (mood selection)
+async def button(update: Update, context: CallbackContext):
+    query = update.callback_query
+    await query.answer()
 
+    # Get the mood from the button clicked
+    mood = query.data
+    await store_mood(query.from_user.id, query.from_user.first_name, mood)
+
+    # Acknowledge the selection
+    await query.edit_message_text(text=f"You selected: {mood}")
+
+    # Generate and send personalized response
+    await generate_personalized_response(mood, query.message.chat_id, context)
+
+# Store mood in the mood_data.json file
+async def store_mood(user_id, user_name, mood):
     # Load existing data
     with open(DATA_FILE, 'r') as file:
         data = json.load(file)
@@ -25,19 +49,32 @@ async def log_mood(update: Update, context):
     # Add new mood entry for the user
     if str(user_id) not in data:
         data[str(user_id)] = {'name': user_name, 'moods': []}
-    
-    data[str(user_id)]['moods'].append({'mood': mood, 'timestamp': update.message.date.isoformat()})
 
-    # Save the updated data back to the file
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    data[str(user_id)]['moods'].append({'mood': mood, 'timestamp': timestamp})
+
+    # Save updated data
     with open(DATA_FILE, 'w') as file:
         json.dump(data, file, indent=4)
 
-    await update.message.reply_text(f"Got it! I've logged your mood as '{mood}'.")
-    
+# Generate personalized responses based on mood
+async def generate_personalized_response(mood, chat_id, context: CallbackContext):
+    if mood == 'happy':
+        await context.bot.send_message(chat_id=chat_id, text="That's great to hear! Keep spreading positivity. 🌟")
+    elif mood == 'sad':
+        await context.bot.send_message(chat_id=chat_id, text="I'm sorry to hear that. Maybe try a deep breathing exercise to relax. 🧘")
+    elif mood == 'anxious':
+        await context.bot.send_message(chat_id=chat_id, text="Feeling anxious can be tough. Here’s an article that might help: [Calm Your Mind](https://example.com)")
+
+# Main function to run the bot
 if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
 
-    start_handler = CommandHandler('start', start)
-    app.add_handler(start_handler)
+    # Add command handler for /start
+    app.add_handler(CommandHandler('start', start))
 
+    # Add callback handler for button presses
+    app.add_handler(CallbackQueryHandler(button))
+
+    # Start the bot
     app.run_polling()
