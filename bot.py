@@ -1,11 +1,12 @@
 import os
 import json
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, CallbackQueryHandler
 from datetime import datetime
 
 # Your bot token from the environment or set manually
-TOKEN = os.getenv("7620234949:AAESoN1w-ClJKfNIlxInqmZuI6uj_K-t8Ns") or "7620234949:AAESoN1w-ClJKfNIlxInqmZuI6uj_K-t8Ns"
+TOKEN = os.getenv("YOUR_BOT_TOKEN")  # Replace with your actual token
 
 # Define the file where mood data will be stored
 DATA_FILE = 'mood_data.json'
@@ -66,6 +67,12 @@ async def generate_personalized_response(mood, chat_id, context: CallbackContext
     elif mood == 'anxious':
         await context.bot.send_message(chat_id=chat_id, text="Feeling anxious can be tough. Here’s an article that might help: [Calm Your Mind](https://example.com)")
 
+# Function to send scheduled check-in messages
+async def send_check_in(chat_id, context):
+    while True:
+        await context.bot.send_message(chat_id=chat_id, text="How are you feeling right now? Please respond with your mood.")
+        await asyncio.sleep(21600)  # Wait for 6 hours
+
 # Main function to run the bot
 if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
@@ -75,6 +82,9 @@ if __name__ == '__main__':
 
     # Add callback handler for button presses
     app.add_handler(CallbackQueryHandler(button))
+
+    # Start the check-in task with context
+    asyncio.create_task(send_check_in(1184477454, app.context))  # Replace with your actual chat ID
 
     # Start the bot
     app.run_polling()

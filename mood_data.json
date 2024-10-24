@@ -13,6 +13,14 @@
             {
                 "mood": "anxious",
                 "timestamp": "2024-10-24 10:06:31"
+            },
+            {
+                "mood": "happy",
+                "timestamp": "2024-10-24 10:17:22"
+            },
+            {
+                "mood": "happy",
+                "timestamp": "2024-10-24 10:30:46"
             }
         ]
     }
