@@ -62,11 +62,14 @@ async def send_check_in(context: CallbackContext):
 if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
 
+    # Initialize and attach JobQueue to the bot
+    job_queue = JobQueue()
+    job_queue.set_application(app)
+
     app.add_handler(CommandHandler('start', start))
     app.add_handler(CallbackQueryHandler(button))
 
     # Set up periodic check-ins
-    job_queue = app.job_queue
     job_queue.run_repeating(send_check_in, interval=21600, first=10, context=1184477454)  # Replace with actual chat ID
 
     # Start the bot
